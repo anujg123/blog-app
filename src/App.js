@@ -1,24 +1,40 @@
-import logo from './logo.svg';
+import { useState, useEffect } from 'react';
+import {  useDispatch } from 'react-redux';
+import authService from './appwrite/auth';
+import { login, logout } from './store/authSlice';
 import './App.css';
+import { Outlet } from 'react-router-dom';
+import Header from './components/Header/Header';
+import Footer from './components/Footer/Footer';
 
 function App() {
+  const [loading, setloading]=useState(true);
+  const dispatch = useDispatch()
+
+  useEffect(()=>{
+    authService.getCurrentUser()
+    .then((userData)=>{
+      if(userData){
+        dispatch(login({userData}));
+      }else{
+        dispatch(logout());
+      }
+    })
+    .catch(console.error())
+    .finally(()=>setloading(false))
+  },[])
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    !loading ? (
+      <div className='min-h-screen flex flex-wrap content-between bg-gray-400'>
+        <div className='w-full block'>
+          <Header/>
+          <main>
+          TODO:<Outlet />
+          </main>
+          <Footer />
+        </div>
+      </div>
+    ): null
   );
 }
 
